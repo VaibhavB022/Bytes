@@ -85,7 +85,7 @@ export const login = async (req, res) => {
 
 export const otp = async (req,res)=>{
 
-    const { otp } = req.body;
+    const { otp } = req.body;   
 
     // Check if OTP is provided and not empty
     if (!otp || otp.trim() === "") {
@@ -109,7 +109,6 @@ export const otp = async (req,res)=>{
         // const token = jwt.sign({ email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
 
         // res.status(200).json({ message: 'OTP verified successfully', token });
-
         
         const tempUser = req.session.tempUser; // Check if the session contains temporary user info
 
