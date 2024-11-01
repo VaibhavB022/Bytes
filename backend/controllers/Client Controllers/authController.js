@@ -28,8 +28,9 @@ export const signup = async (req, res) => {
             }
             
             // Send a response back to the client after saving
-            res.status(200).json({ message: "Session saved successfully. Proceed to OTP verification." });
+            // res.status(200).json({ message: "Session saved successfully. Proceed to OTP verification." });
           });
+          
         // Send OTP via email
         await sendOTPEmail(email, otp);
         console.log("this console log is in signup controller, this ensures that render shows the console logs");
@@ -120,7 +121,9 @@ export const otp = async (req,res)=>{
         // res.status(200).json({ message: 'OTP verified successfully', token });
         
         const tempUser = req.session.tempUser; // Check if the session contains temporary user info
-        console.log(tempUser);
+        console.log("Session data:",tempUser);
+
+        // Check if session data exists
         if(!tempUser){
             return res.status(400).json({message : "Session expired or no User Data Found"})
         }
@@ -141,6 +144,7 @@ export const otp = async (req,res)=>{
 
         // Clear session after successful signup
         req.session.tempUser = null;
+        await req.session.save(); // Ensure session is saved after clearing
         
         res.status(201)
             .json({

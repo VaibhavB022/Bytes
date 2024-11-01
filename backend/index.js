@@ -32,7 +32,7 @@ app.use(session({
         secure: process.env.NODE_ENV === 'production' || false,
         httpOnly: true,
         maxAge: 300000,
-        sameSite : 'none'
+        sameSite : process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     }
 }));
 
