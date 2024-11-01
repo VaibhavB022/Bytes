@@ -1,7 +1,7 @@
-import UserModel from "../Models/User.js"
+import UserModel from "../../Models/User.js"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
-import { sendOTPEmail , generateOTP } from "../middlewares/OtpHelper.js"
+import { sendOTPEmail , generateOTP } from "../../middlewares/OtpHelper.js"
 
 export const signup = async (req, res) => {
     try {
@@ -111,7 +111,7 @@ export const otp = async (req,res)=>{
         // res.status(200).json({ message: 'OTP verified successfully', token });
         
         const tempUser = req.session.tempUser; // Check if the session contains temporary user info
-
+        
         if(!tempUser){
             return res.status(400).json({message : "Session expired or no User Data Found"})
         }

@@ -8,23 +8,35 @@ import './Models/db.js'
 import session from "express-session"
 import MongoStore from "connect-mongo";
 import nodemailer from "nodemailer"
+import RedisStore from "connect-redis";
+import { createClient } from "redis";
 
 const app = express();
 
+const redisClient = createClient({
+  socket : {
+    host : 'localhost',
+    port : '6379'
+  }
+})
+
+redisClient.connect().catch(console.error);
+
 app.use(session({
-    store: MongoStore.create({
-        mongoUrl: process.env.DATABASE_URL,
-        ttl: 14 * 24 * 60 * 60 // expiration time in seconds (optional)
-    }),
-    secret: process.env.JWT_SECRET_KEY || 'your-secret-key',
+    store: new RedisStore({client :redisClient}),
+    secret: process.env.JWT_SECRET_KEY ,
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production' || false,
         httpOnly: true,
-        maxAge: 1000 * 60 * 10
+        maxAge: 300000
     }
 }));
+
+redisClient.on("connect", () => console.log("Connected to Redis"));
+redisClient.on("error", (err) => console.error("Redis error:", err));
+
 
 //THIS IS A TEST ROUTE FOR TESTING OTPs
 app.get('/send-test-email', async (req, res) => {
