@@ -14,10 +14,11 @@ import { createClient } from "redis";
 const app = express();
 
 const redisClient = createClient({
-  socket : {
-    host : 'localhost',
-    port : '6379'
-  }
+  password: process.env.REDIS_PASS,
+    socket: {
+        host: 'redis-14570.c84.us-east-1-2.ec2.redns.redis-cloud.com',
+        port: 14570
+    }
 })
 
 redisClient.connect().catch(console.error);
