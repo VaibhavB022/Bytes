@@ -23,7 +23,7 @@ const redisClient = createClient({
 
 redisClient.connect().catch(console.error);
 
-app.use(session({
+app.use(session({ 
     store: new RedisStore({client :redisClient}),
     secret: process.env.JWT_SECRET_KEY ,
     resave: false,
@@ -31,7 +31,8 @@ app.use(session({
     cookie: {
         secure: process.env.NODE_ENV === 'production' || false,
         httpOnly: true,
-        maxAge: 300000
+        maxAge: 300000,
+        sameSite : 'none'
     }
 }));
 

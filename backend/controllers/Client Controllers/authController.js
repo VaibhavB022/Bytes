@@ -20,7 +20,16 @@ export const signup = async (req, res) => {
 
         // Temporarily store user info and OTP in session
         req.session.tempUser = { name, email, password, otp };
-
+        console.log(req.session.tempUser);
+        req.session.save((err) => {
+            if (err) {
+              console.error("Session save error:", err);
+              return res.status(500).json({ message: "Session save failed" });
+            }
+            
+            // Send a response back to the client after saving
+            res.status(200).json({ message: "Session saved successfully. Proceed to OTP verification." });
+          });
         // Send OTP via email
         await sendOTPEmail(email, otp);
         console.log("this console log is in signup controller, this ensures that render shows the console logs");
@@ -111,7 +120,7 @@ export const otp = async (req,res)=>{
         // res.status(200).json({ message: 'OTP verified successfully', token });
         
         const tempUser = req.session.tempUser; // Check if the session contains temporary user info
-        
+        console.log(tempUser);
         if(!tempUser){
             return res.status(400).json({message : "Session expired or no User Data Found"})
         }
