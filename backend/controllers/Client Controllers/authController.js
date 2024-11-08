@@ -18,18 +18,22 @@ export const signup = async (req, res) => {
 
         const otp = generateOTP();
 
+        const tempUserData = { name, email, password , otp};
+        const token = jwt.sign(tempUserData , process.env.JWT_SECRET_KEY , {expiresIn : '5m'});
+
         // Temporarily store user info and OTP in session
-        req.session.tempUser = { name, email, password, otp };
-        console.log(req.session.tempUser);
-        req.session.save((err) => {
-            if (err) {
-              console.error("Session save error:", err);
-              return res.status(500).json({ message: "Session save failed" });
-            }
+        // req.session.tempUser = { name, email, password, otp };
+        // console.log(req.session.tempUser);
+        
+        // req.session.save((err) => {
+        //     if (err) {
+        //       console.error("Session save error:", err);
+        //       return res.status(500).json({ message: "Session save failed" });
+        //     }
             
             // Send a response back to the client after saving
             // res.status(200).json({ message: "Session saved successfully. Proceed to OTP verification." });
-          });
+        //   });
           
         // Send OTP via email
         await sendOTPEmail(email, otp);
@@ -97,6 +101,12 @@ export const otp = async (req,res)=>{
 
     const { otp } = req.body;   
 
+    const token = req.headers.authorization?.split(' ')[1]; // Extract token from Authorization header
+    console.log("Token is : " , token);
+    if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+    }
+    
     // Check if OTP is provided and not empty
     if (!otp || otp.trim() === "") {
         return res.status(400).json({ message: "OTP is required" });
@@ -120,31 +130,42 @@ export const otp = async (req,res)=>{
 
         // res.status(200).json({ message: 'OTP verified successfully', token });
         
-        const tempUser = req.session.tempUser; // Check if the session contains temporary user info
-        console.log("Session data:",tempUser);
+        // const tempUser = req.session.tempUser; // Check if the session contains temporary user info
+        // console.log("Session data:",tempUser);
 
         // Check if session data exists
-        if(!tempUser){
-            return res.status(400).json({message : "Session expired or no User Data Found"})
-        }
 
+        
+        // if(!tempUser){
+        //     return res.status(400).json({message : "Session expired or no User Data Found"})
+        // }
+
+        
         //Verify OTP
-        if(tempUser.otp !== otp){
-            return res.status(400).json({message : "Invalid OTP"})
-        }
+        // if(tempUser.otp !== otp){
+        //     return res.status(400).json({message : "Invalid OTP"})
+        // }
 
+         // Decode the JWT to get user data
+         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        
+         // Check if OTP matches
+         if (decoded.otp !== otp) {
+             return res.status(400).json({ message: "Invalid OTP" });
+         }
+ 
         const userModel = new UserModel({ 
-            name : tempUser.name,
-            email :tempUser.email, 
-            password :tempUser.password
+            name : decoded.name,
+            email :decoded.email, 
+            password :decoded.password
         });
 
-        userModel.password = await bcrypt.hash(tempUser.password, 10);
+        userModel.password = await bcrypt.hash(decoded.password, 10);
         await userModel.save();
 
         // Clear session after successful signup
-        req.session.tempUser = null;
-        await req.session.save(); // Ensure session is saved after clearing
+        // req.session.tempUser = null;
+        // await req.session.save(); // Ensure session is saved after clearing
         
         res.status(201)
             .json({

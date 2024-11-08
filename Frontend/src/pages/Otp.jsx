@@ -34,7 +34,10 @@ const Otp = ()=>{
       }
       
       // Send OTP to the backend for verification
-      const res = await apiRequest.post('/verify-otp' , {otp});
+      const res = await apiRequest.post('/verify-otp' , {otp},{
+        headers: {
+            Authorization: `Bearer ${token}`  // Pass token in the Authorization header
+        }});
 
       if (res.status === 201 || res.status ==200) {
         // On successful OTP verification, redirect to the next page
